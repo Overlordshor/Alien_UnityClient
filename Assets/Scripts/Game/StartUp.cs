@@ -1,3 +1,4 @@
+using Cinemachine;
 using MimicSpace;
 using SpaceGame.SaveSystem;
 using SpaceGame.SaveSystem.Dto;
@@ -5,6 +6,7 @@ using SpaceGame.ScoreSystem;
 using SpaceGame.UI;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Quaternion = UnityEngine.Quaternion;
 using Vector3 = UnityEngine.Vector3;
 
@@ -25,6 +27,7 @@ namespace SpaceGame.Game
 
         [SerializeField] private int _playersNumber = 2;
 
+        [SerializeField] private CinemachineVirtualCamera _virtualCamera;
         [SerializeField] private Mimic[] _playerShipPrefabs;
         private List<PlayerData> _playersData;
 
@@ -78,6 +81,8 @@ namespace SpaceGame.Game
                 var player = playerFactory.CreatePlayer((PlayerIndex)index, playerData);
 
                 var playerView = CreatePlayerShip(_playerShipPrefabs[index], player, playerData);
+                _virtualCamera.Follow = playerView.transform;
+                _virtualCamera.LookAt = playerView.transform;
 
                 player.SetShipId(playerView.Guid);
 
@@ -144,6 +149,8 @@ namespace SpaceGame.Game
 
                 playerView.OnEnemyDestroyed -= OnEnemyDestroyed;
                 playerView.OnDestroyed -= OnDestroyed;
+
+                SceneManager.LoadScene(0);
             }
         }
 

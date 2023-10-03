@@ -17,7 +17,6 @@ namespace MimicSpace
         public float velocityLerpCoef = 4f;
         private Mimic myMimic;
         private PlayerActionsExample playerInput;
-        private Collider colider;
 
         private void Start()
         {
