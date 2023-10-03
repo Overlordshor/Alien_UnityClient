@@ -16,17 +16,23 @@ namespace MimicSpace
         private Vector3 velocity = Vector3.zero;
         public float velocityLerpCoef = 4f;
         private Mimic myMimic;
+        private PlayerActionsExample playerInput;
         private Collider colider;
 
         private void Start()
         {
             myMimic = GetComponent<Mimic>();
-            colider = GetComponent<Collider>();
+            playerInput = new PlayerActionsExample();
+            playerInput.Enable();
         }
 
         private void Update()
         {
-            velocity = Vector3.Lerp(velocity, new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized * speed, velocityLerpCoef * Time.deltaTime);
+            var movement = playerInput.Player.Move.ReadValue<Vector2>();
+            if (movement == Vector2.zero)
+                return;
+
+            velocity = Vector3.Lerp(velocity, new Vector3(movement.x, 0, movement.y).normalized * speed, velocityLerpCoef * Time.deltaTime);
 
             // Assigning velocity to the mimic to assure great leg placement
             myMimic.velocity = velocity;

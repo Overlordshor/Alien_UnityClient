@@ -10,14 +10,14 @@ namespace SpaceGame.UI
     {
         [SerializeField] private Button _startGameButton;
         [SerializeField] private Button _loadGameButton;
-        [SerializeField] private Button _endGameButton;
+
         private SaveService _saveService;
 
         private void Start()
         {
             _startGameButton.onClick.AddListener(StartNewGame);
             _loadGameButton.onClick.AddListener(StartLoadedGame);
-            _endGameButton.onClick.AddListener(EndGame);
+
 
             _saveService = new SaveService();
             _loadGameButton.gameObject.SetActive(_saveService.HasSave());
@@ -40,7 +40,7 @@ namespace SpaceGame.UI
 
         private void EndGame()
         {
-            _endGameButton.interactable = false;
+
             Application.Quit();
         }
 
@@ -48,7 +48,7 @@ namespace SpaceGame.UI
         {
             _startGameButton.onClick.RemoveAllListeners();
             _loadGameButton.onClick.RemoveAllListeners();
-            _endGameButton.onClick.RemoveAllListeners();
+
         }
     }
 }

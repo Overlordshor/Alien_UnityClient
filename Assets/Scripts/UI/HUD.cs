@@ -52,7 +52,7 @@ namespace SpaceGame.UI
 
         public void SetEnemyCount(int count)
         {
-            _enemyShipCountText.text = $"Enemy ship count: {count}";
+            _enemyShipCountText.text = $"Enemy count: {count}";
         }
 
         public void OnDestroy()
