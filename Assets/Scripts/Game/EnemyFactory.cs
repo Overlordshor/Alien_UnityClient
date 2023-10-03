@@ -1,6 +1,7 @@
+using MimicSpace;
+using SpaceGame.Alien;
 using SpaceGame.SaveSystem;
 using SpaceGame.SaveSystem.Dto;
-using SpaceGame.Ship;
 using System;
 using System.Collections;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace SpaceGame.Game
 {
     public class EnemyFactory : MonoBehaviour
     {
-        [SerializeField] private EnemyShip _enemyShipPrefab;
+        [SerializeField] private MimicEnemy _enemyView;
         [SerializeField] private float _minPositionX;
         [SerializeField] private float _maxPositionX;
         [SerializeField] private float _positionY;
@@ -20,7 +21,7 @@ namespace SpaceGame.Game
         [SerializeField] private EnemyRepository _enemyRepository;
 
         private WaitForSeconds _wait;
-        private PlayerShip[] players;
+        private Mimic[] players;
         private float _maxHealth;
 
         private void Start()
@@ -28,15 +29,15 @@ namespace SpaceGame.Game
             _wait = new WaitForSeconds(_spawnDelay);
         }
 
-        public void SetUp(PlayerShip[] playerShips, float maxHealth)
+        public void SetUp(Mimic[] playerViews, float maxHealth)
         {
-            players = playerShips;
+            players = playerViews;
             _maxHealth = maxHealth;
         }
 
         public void StartSpawnEnemies()
         {
-            StartCoroutine(SpawnEnemyCoroutine());
+            _ = StartCoroutine(SpawnEnemyCoroutine());
         }
 
         private bool HasAlivePlayer()
@@ -60,25 +61,25 @@ namespace SpaceGame.Game
                 enemyData.Id = Guid.NewGuid();
 
                 GameContext.CurrentGameData.EnemiesData.Add(enemyData);
-                SpawnEnemy(enemyData);
+                _ = SpawnEnemy(enemyData);
             }
         }
 
-        public EnemyShip SpawnEnemy(SpaceShipData enemyData)
+        public Mimic SpawnEnemy(SpaceShipData enemyData)
         {
             var position = new Vector3(enemyData.Positions[0], enemyData.Positions[1], 0);
-            var enemyShip = CreateEnemyShip(position);
-            enemyShip.SetTargets(players);
+            var enemyView = CreateEnemyView(position);
+            enemyView.SetTargets(players);
 
-            enemyShip.SetHealth(enemyData.Health);
-            enemyShip.SetId(enemyData.Id);
+            enemyView.SetHealth(enemyData.Health);
+            enemyView.SetId(enemyData.Id);
 
-            return enemyShip;
+            return enemyView;
         }
 
-        private EnemyShip CreateEnemyShip(Vector3 position)
+        private MimicEnemy CreateEnemyView(Vector3 position)
         {
-            var enemyShip = Instantiate(_enemyShipPrefab, position, Quaternion.identity);
+            var enemyShip = Instantiate(_enemyView, position, Quaternion.identity);
 
             _enemyRepository.Add(enemyShip);
 

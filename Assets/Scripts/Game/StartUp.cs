@@ -1,13 +1,12 @@
-using SpaceGame.Ship;
-using SpaceGame.ScoreSystem;
-using UnityEngine;
+using MimicSpace;
 using SpaceGame.SaveSystem;
-using SpaceGame.UI;
 using SpaceGame.SaveSystem.Dto;
-using Vector3 = UnityEngine.Vector3;
-using Quaternion = UnityEngine.Quaternion;
-using System;
+using SpaceGame.ScoreSystem;
+using SpaceGame.UI;
 using System.Collections.Generic;
+using UnityEngine;
+using Quaternion = UnityEngine.Quaternion;
+using Vector3 = UnityEngine.Vector3;
 
 namespace SpaceGame.Game
 {
@@ -26,9 +25,16 @@ namespace SpaceGame.Game
 
         [SerializeField] private int _playersNumber = 2;
 
-        [SerializeField] private PlayerShip[] _playerShipPrefabs;
+        [SerializeField] private Mimic[] _playerShipPrefabs;
         private List<PlayerData> _playersData;
 
+        private void Awake()
+        {
+            foreach (var g in GameObject.FindObjectsOfType<Leg>())
+            {
+                Destroy(g.gameObject);
+            }
+        }
         private void Start()
         {
             _enemyRepository.OnEnemyAdded += OnEnemyCountChanged;
@@ -36,6 +42,7 @@ namespace SpaceGame.Game
 
             var playerFactory = new PlayerFactory();
 
+            GameContext.CurrentGameData ??= new GameData();
             _playersData = GameContext.CurrentGameData.PlayersData;
             while (_playersData.Count < _playersNumber)
             {
@@ -50,11 +57,11 @@ namespace SpaceGame.Game
                 _playersData.Add(playerData);
             }
 
-            var playerShips = new PlayerShip[_playersNumber];
+            var playerShips = new Mimic[_playersNumber];
 
-            for (int i = 0; i < _playersNumber; i++)
+            for (var i = 0; i < _playersNumber; i++)
             {
-                CreatePlayerAndShip(i);
+                CreatePlayer(i);
             }
 
             _enemyFactory.SetUp(playerShips, _maxHealth);
@@ -62,19 +69,19 @@ namespace SpaceGame.Game
 
             foreach (var enemyData in GameContext.CurrentGameData.EnemiesData)
             {
-                _enemyFactory.SpawnEnemy(enemyData);
+                _ = _enemyFactory.SpawnEnemy(enemyData);
             }
 
-            void CreatePlayerAndShip(int index)
+            void CreatePlayer(int index)
             {
                 var playerData = _playersData[index];
                 var player = playerFactory.CreatePlayer((PlayerIndex)index, playerData);
 
-                var playerShip = CreatePlayerShip(_playerShipPrefabs[index], player, playerData);
+                var playerView = CreatePlayerShip(_playerShipPrefabs[index], player, playerData);
 
-                player.SetShipId(playerShip.Guid);
+                player.SetShipId(playerView.Guid);
 
-                playerShips[index] = playerShip;
+                playerShips[index] = playerView;
 
                 _enemyRepository.OnEnemyAdded += TryKillPlayers;
 
@@ -82,31 +89,31 @@ namespace SpaceGame.Game
                 {
                     if (count == 10)
                     {
-                        playerShip.Damage(playerShip.CurrentHealth);
+                        playerView.Damage(playerView.CurrentHealth);
                     }
                 }
             }
         }
 
-        private PlayerShip CreatePlayerShip(PlayerShip playerShipPrefab, Player player, PlayerData playerData)
+        private Mimic CreatePlayerShip(Mimic playerViewPrefab, Player player, PlayerData playerData)
         {
             var startedPosition = new Vector3(playerData.Positions[0], playerData.Positions[1], _startedPosition.position.z);
-            var playerShip = Instantiate(playerShipPrefab, startedPosition, Quaternion.identity);
+            var playerView = Instantiate(playerViewPrefab, startedPosition, Quaternion.identity);
 
-            playerShip.SetHealth(playerData.Health);
+            playerView.SetHealth(playerData.Health);
 
-            playerShip.OnHealthChanged += OnPlayerHealthChanged;
-            OnPlayerHealthChanged(playerShip.CurrentHealth);
+            playerView.OnHealthChanged += OnPlayerHealthChanged;
+            OnPlayerHealthChanged(playerView.CurrentHealth);
 
             player.OnScoreAdded += OnPlayerScoreAdded;
             OnPlayerScoreAdded(player.GetScore());
 
-            playerShip.SetId(playerData.Id);
+            playerView.SetId(playerData.Id);
 
-            playerShip.OnEnemyDestroyed += OnEnemyDestroyed;
-            playerShip.OnDestroyed += OnDestroyed;
+            playerView.OnEnemyDestroyed += OnEnemyDestroyed;
+            playerView.OnDestroyed += OnDestroyed;
 
-            return playerShip;
+            return playerView;
             void OnPlayerHealthChanged(float health)
             {
                 if (player.Id == PlayerIndex.Second)
@@ -114,6 +121,7 @@ namespace SpaceGame.Game
                 if (player.Id == PlayerIndex.First)
                     UpdateFirstPlayerHealth(health);
             }
+
             void OnPlayerScoreAdded(int score)
             {
                 if (player.Id == PlayerIndex.Second)
@@ -121,19 +129,21 @@ namespace SpaceGame.Game
                 if (player.Id == PlayerIndex.First)
                     OnFirstPlayerScoreAdded(score);
             }
+
             void OnEnemyDestroyed()
             {
                 player.AddScore(_scorePerEnemy);
             }
+
             void OnDestroyed()
             {
                 player.OnScoreAdded -= OnPlayerScoreAdded;
-                playerShip.OnHealthChanged -= OnPlayerHealthChanged;
+                playerView.OnHealthChanged -= OnPlayerHealthChanged;
 
-                _playersData.Remove(playerData);
+                _ = _playersData.Remove(playerData);
 
-                playerShip.OnEnemyDestroyed -= OnEnemyDestroyed;
-                playerShip.OnDestroyed -= OnDestroyed;
+                playerView.OnEnemyDestroyed -= OnEnemyDestroyed;
+                playerView.OnDestroyed -= OnDestroyed;
             }
         }
 

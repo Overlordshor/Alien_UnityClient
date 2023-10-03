@@ -1,5 +1,5 @@
-﻿using SpaceGame.SaveSystem;
-using SpaceGame.Ship;
+﻿using SpaceGame.Alien;
+using SpaceGame.SaveSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,21 +13,21 @@ namespace SpaceGame.Game
 
         public event Action<int> OnEnemyAdded;
 
-        private List<EnemyShip> _enemyShips = new List<EnemyShip>();
+        private List<MimicEnemy> _enemyShips = new();
 
-        public void Add(EnemyShip enemyShip)
+        public void Add(MimicEnemy enemyShip)
         {
             _enemyShips.Add(enemyShip);
 
             OnEnemyAdded?.Invoke(_enemyShips.Count);
         }
 
-        public void Remove(EnemyShip enemyShip)
+        public void Remove(MimicEnemy enemyShip)
         {
-            _enemyShips.Remove(enemyShip);
+            _ = _enemyShips.Remove(enemyShip);
 
             var enemyData = GameContext.CurrentGameData.EnemiesData.First(enemyData => enemyData.Id == enemyShip.Guid);
-            GameContext.CurrentGameData.EnemiesData.Remove(enemyData);
+            _ = GameContext.CurrentGameData.EnemiesData.Remove(enemyData);
 
             OnEnemyRemoved?.Invoke(_enemyShips.Count);
         }

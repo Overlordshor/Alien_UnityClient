@@ -1,3 +1,4 @@
+using MimicSpace;
 using SpaceGame.SaveSystem;
 using System.Collections;
 using System.Linq;
@@ -11,8 +12,8 @@ namespace SpaceGame.Ship
         [SerializeField] private float _speed = 1.5f;
         [SerializeField] private float _firstShootDelay = 3;
 
-        private PlayerShip _player;
-        private PlayerShip[] _players;
+        private Mimic _player;
+        private Mimic[] _players;
 
         private Vector3 _delta;
         private Quaternion _rotation;
@@ -29,17 +30,17 @@ namespace SpaceGame.Ship
             _delta.Normalize();
         }
 
-        public void SetTargets(PlayerShip[] players)
+        public void SetTargets(Mimic[] players)
         {
             _players = players;
             _player = FindRandomAlivePlayer(players);
 
-            StartCoroutine(ShootCoroutine());
+            _ = StartCoroutine(ShootCoroutine());
         }
 
         protected override void Movement()
         {
-            transform.position = transform.position + _delta * _speed;
+            transform.position = transform.position + (_delta * _speed);
             var enemyData = GameContext.CurrentGameData.EnemiesData.First(enemyData => enemyData.Id == Guid);
             enemyData.Positions = new[] { transform.position.x, transform.position.y };
         }
@@ -72,7 +73,7 @@ namespace SpaceGame.Ship
             return _player != null;
         }
 
-        private PlayerShip FindRandomAlivePlayer(PlayerShip[] players)
+        private Mimic FindRandomAlivePlayer(Mimic[] players)
         {
             var alivePlayers = players
                 .Where(player => player != null)
